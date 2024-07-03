@@ -25,12 +25,24 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/api-${{ secrets.NIM }}:latest
 
-          
+  clear_deployment:
+    name: Clear Previous Deployment
+    runs-on: ubuntu-latest
+    needs: push_to_registry
+    steps:
+      - name: Clear deployment using curl
+        uses: indiesdev/curl@v1.1
+        with:
+          url: 'http://154.26.139.201:8080/clean/${{ secrets.NIM }}'
+          method: 'DELETE'
+          headers: '{"Content-Type": "application/json"}'
+          accept: 200
+          log-response: true
 
   deploy_to_kubernetes:
     name: Deploy to Kubernetes
     runs-on: ubuntu-latest
-    needs: push_to_registry
+    needs: clear_deployment
     steps:
       - name: Deploy using curl
         uses: indiesdev/curl@v1.1
